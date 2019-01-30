@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>icon/cabe.png</file>
+        <file>icon/chip.png</file>
+        <file>icon/computer.png</file>
+        <file>icon/exchange.png</file>
+        <file>icon/listen.png</file>
+        <file>icon/save.png</file>
+        <file>icon/wifi.png</file>
+        <file>icon/AC_O.PNG</file>
+        <file>icon/AC_OFF.PNG</file>
+        <file>icon/battery_o.PNG</file>
+        <file>icon/battery_off.PNG</file>
+        <file>icon/warring.PNG</file>
+        <file>icon/switch_off.png</file>
+        <file>icon/switch_on.png</file>
+        <file>icon/Jack_off.PNG</file>
+        <file>icon/Jack_on.PNG</file>
+        <file>icon/send.png</file>
+        <file>icon/start.png</file>
+        <file>icon/stop.png</file>
+    </qresource>
+    <qresource prefix="/picture">
+        <file>image/capital.png</file>
+        <file>image/background1.PNG</file>
+    </qresource>
+</RCC>
