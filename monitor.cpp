@@ -12,6 +12,8 @@
 #include <QtCharts>
 QT_CHARTS_USE_NAMESPACE
 
+int Data_Rec[5]={0} ;//数据接收，预处理全局变量
+
 Monitor::Monitor(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Monitor)
@@ -26,8 +28,8 @@ Monitor::Monitor(QWidget *parent) :
     ui->label_capital->setScaledContents(true);
     ui->label_capital->setPixmap(*pixmap);
 
-    myTimer = new QTimer(this);
-    connect(myTimer,&QTimer::timeout,this,&Monitor::dealTimerout);
+//    myTimer = new QTimer(this);
+//    connect(myTimer,&QTimer::timeout,this,&Monitor::dealTimerout);
 
     myThread = new Thread(this);
     connect(myThread,&Thread::isDone,this,&Monitor::deal_isDone);//使用信号开启线程
@@ -117,10 +119,10 @@ void Monitor::on_pushButton_searchuart_clicked()//搜索串口按钮
 
 //信号槽
 //定时器槽函数
-void Monitor::dealTimerout()
-{
+//void Monitor::dealTimerout()
+//{
 
-}
+//}
 
 void Monitor::deal_isDone()
 {
@@ -365,7 +367,9 @@ void Monitor::creatChart()  //创建波形图
 
 void Monitor::on_pushButton_drawing_clicked()
 {
+
     emit Start_Drawing();
+    ui->textBrowser_wave->append(QString::number(Data_Rec[2]));
 }
 
 void Monitor::on_pushButton_drawing_stop_clicked()

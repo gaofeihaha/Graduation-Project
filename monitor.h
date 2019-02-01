@@ -25,7 +25,7 @@ public:
     explicit Monitor(QWidget *parent = 0);
     ~Monitor();
 
-    void dealTimerout();//定时器槽函数
+//    void dealTimerout();//定时器槽函数
 
     void deal_isDone();
     void stop_Thread();
@@ -34,6 +34,7 @@ public:
     void Uart_init();//串口初始化
     QString GetLocalIP();
 
+    QTimer *pTimer1;
 
     void creatChart();
 
@@ -96,7 +97,7 @@ private:
     int m_count;
     qreal m_maxY;
     qreal m_minY;
-    QTimer *pTimer1;
+
 
     QChart *Chart_1;
     QLineSeries *series0;

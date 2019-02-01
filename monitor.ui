@@ -1799,7 +1799,7 @@ border-image: url(:/icon/icon/send.png);</string>
           </layout>
          </item>
          <item>
-          <widget class="QTextBrowser" name="textBrowser">
+          <widget class="QTextBrowser" name="textBrowser_wave">
            <property name="minimumSize">
             <size>
              <width>389</width>

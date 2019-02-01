@@ -20,6 +20,10 @@ public slots:
 
 };
 
+
+extern int Data_Rec[5];
+
+
 #endif // THREAD_H
 
 
