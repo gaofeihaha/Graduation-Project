@@ -38,6 +38,9 @@ public:
 
     void creatChart();
 
+    void Thread_start();
+
+    void Home_page(int para);
 
 protected:
     //重写绘图事件
@@ -84,6 +87,8 @@ private slots:
 
     void on_pushButton_drawing_stop_clicked();
 
+    void on_comboBox_2_currentIndexChanged(int index);
+
 private:
     Ui::Monitor *ui;
     QTimer *myTimer;//声明变量
@@ -104,6 +109,7 @@ private:
 signals:
         void Start_Drawing();
         void Stop_Drawing();
+        void Data_Rec_Over();
 };
 
 

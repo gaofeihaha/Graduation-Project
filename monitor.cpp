@@ -12,7 +12,7 @@
 #include <QtCharts>
 QT_CHARTS_USE_NAMESPACE
 
-int Data_Rec[5]={0} ;//数据接收，预处理全局变量
+QString Str_Rec ;//数据接收，预处理全局变量
 
 Monitor::Monitor(QWidget *parent) :
     QWidget(parent),
@@ -28,23 +28,23 @@ Monitor::Monitor(QWidget *parent) :
     ui->label_capital->setScaledContents(true);
     ui->label_capital->setPixmap(*pixmap);
 
-//    myTimer = new QTimer(this);
-//    connect(myTimer,&QTimer::timeout,this,&Monitor::dealTimerout);
-
     myThread = new Thread(this);
-    connect(myThread,&Thread::isDone,this,&Monitor::deal_isDone);//使用信号开启线程
+    connect(myThread,&Thread::isDone,this,&Monitor::deal_isDone);//使用信号开启线程,数据处理完成
+    connect(this,&Monitor::Data_Rec_Over,this,&Monitor::Thread_start);//数据接收完毕，触发线程启动数据计算
     connect(this,&Monitor::destroyed,this,&Monitor::stop_Thread);//点击窗口关闭按钮时触发关闭信号
 
-    Uart_init();
+    //默认使用WIFI方式
+    ui->pushButton_8->setEnabled(true);
+    ui->pushButton_searchuart->setEnabled(false);
+    ui->pushButton_stop->setEnabled(false); //SOCKET未打开前点击该按钮会出现软件崩溃
+
     creatChart();
 
 }
-
 Monitor::~Monitor()
 {
     delete ui;
 }
-
 
 //绘制背景图片
 void Monitor::paintEvent(QPaintEvent *event)
@@ -57,6 +57,56 @@ void Monitor::paintEvent(QPaintEvent *event)
     //背景图片放到源文件文件夹同一父文件夹,与下一句相同作用
     p.drawPixmap(rect(),QPixmap("../picture/b_linux.png"));
 }
+//首页状态显示
+void Monitor::Home_page(int para)//设置首页各状态指示
+{
+    //交流电源状态
+    if((para & 0x01) == 0x01) ui->label_AC->setStyleSheet("border-image: url(:/icon/icon/AC_O.PNG)");
+        else if ((para & 0x01) == 0x00)ui->label_AC->setStyleSheet("border-image: url(:/icon/icon/AC_OFF.PNG)");
+    //交流电源下开关
+    if((para & 0x02) == 0x02) ui->label_AC_SW->setStyleSheet("border-image: url(:/icon/icon/switch_on.png)");
+        else if ((para & 0x02) == 0x00)ui->label_AC_SW->setStyleSheet("border-image: url(:/icon/icon/switch_off.png)");
+    //直流电源状态
+    if((para & 0x04) == 0x04) ui->label_DC->setStyleSheet("border-image: url(:/icon/icon/battery_o.PNG)");
+        else if ((para & 0x04) == 0x00)ui->label_DC->setStyleSheet("border-image: url(:/icon/icon/battery_off.PNG)");
+    //直流电源下开关
+    if((para & 0x08) == 0x08) ui->label_DC_SW->setStyleSheet("border-image: url(:/icon/icon/switch_on.png)");
+        else if ((para & 0x08) == 0x00)ui->label_DC_SW->setStyleSheet("border-image: url(:/icon/icon/switch_off.png)");
+    //支路1状态
+    if((para & 0x10) == 0x10)
+        {
+            ui->label_JC_SW_2->setStyleSheet("border-image: url(:/icon/icon/switch_on.png)");
+            ui->label_JC_1->setStyleSheet("border-image: url(:/icon/icon/Jack_on.PNG)");
+        }
+        else if ((para & 0x10) == 0x00)
+        {
+            ui->label_JC_SW_2->setStyleSheet("border-image: url(:/icon/icon/switch_off.png)");
+            ui->label_JC_1->setStyleSheet("border-image: url(:/icon/icon/Jack_off.PNG)");
+        }
+    //支路2状态
+    if((para & 0x20) == 0x20)
+        {
+            ui->label_JC_SW_3->setStyleSheet("border-image: url(:/icon/icon/switch_on.png)");
+            ui->label_JC_2->setStyleSheet("border-image: url(:/icon/icon/Jack_on.PNG)");
+        }
+        else if ((para & 0x20) == 0x00)
+        {
+            ui->label_JC_SW_3->setStyleSheet("border-image: url(:/icon/icon/switch_off.png)");
+            ui->label_JC_2->setStyleSheet("border-image: url(:/icon/icon/Jack_off.PNG)");
+        }
+    //支路3状态
+    if((para & 0x40) == 0x40)
+        {
+            ui->label_JC_SW_4->setStyleSheet("border-image: url(:/icon/icon/switch_on.png)");
+            ui->label_JC_3->setStyleSheet("border-image: url(:/icon/icon/Jack_on.PNG)");
+        }
+        else if ((para & 0x40) == 0x00)
+        {
+            ui->label_JC_SW_4->setStyleSheet("border-image: url(:/icon/icon/switch_off.png)");
+            ui->label_JC_3->setStyleSheet("border-image: url(:/icon/icon/Jack_off.PNG)");
+        }
+}
+
 
 //按键槽
 void Monitor::on_pushButton_home_clicked()
@@ -87,6 +137,7 @@ void Monitor::on_pushButton_clicked()//开始监听按钮
     ui->textBro_tcpreceive->append("**开始监听"+tcpSever->serverAddress().toString()+":"
                                    +QString::number(tcpSever->serverPort()));
     ui->pushButton->setEnabled(false);
+    ui->pushButton_stop->setEnabled(true);
 
 }
 void Monitor::on_pushButton_stop_clicked()//停止监听按钮
@@ -97,9 +148,12 @@ void Monitor::on_pushButton_stop_clicked()//停止监听按钮
     tcpSever->close();
 }
 
-void Monitor::on_pushButton_9_clicked()
+void Monitor::on_pushButton_9_clicked()//第四页测试按钮
 {
-    myThread->start();//启动线程
+    Home_page(170);
+    int i=85;
+    int j=i&0x11;
+    qDebug()<<QString::number(j);
 }
 void Monitor::on_pushButton_8_clicked()//状态更新按钮
 {
@@ -107,6 +161,8 @@ void Monitor::on_pushButton_8_clicked()//状态更新按钮
 }
 void Monitor::on_pushButton_searchuart_clicked()//搜索串口按钮
 {
+    Uart_init();
+
     ui->comboBox_port->clear();
     //通过QSerialPortInfo查找可用串口
     foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
@@ -115,23 +171,47 @@ void Monitor::on_pushButton_searchuart_clicked()//搜索串口按钮
     }
 }
 
+//自定义信号槽函数
 
-
-//信号槽
-//定时器槽函数
-//void Monitor::dealTimerout()
-//{
-
-//}
+void Monitor::Thread_start()
+{
+    myThread->start();//启动线程
+}
 
 void Monitor::deal_isDone()
 {
-    QMessageBox::about(this,"提示","线程已开启");
+    ui->textBrowser_wave->append("ok");
+    ui->textBrowser_wave->append( Data_Rec_list[1]);
+    stop_Thread();
+   // QMessageBox::about(this,"提示","线程已关闭");
 }
 void Monitor::stop_Thread()
 {
     myThread->quit();//停止线程
     myThread->wait();//等待线程处理完手头工作
+}
+
+//通信方式选择
+void Monitor::on_comboBox_2_currentIndexChanged(int index)
+{
+    switch (index) {
+    case 0:           //WIFI方式
+            {
+                ui->pushButton_8->setEnabled(true);
+                ui->pushButton_searchuart->setEnabled(false);
+                ui->pushButton_openuart->setEnabled(false);
+            }
+        break;
+    case 1:           //串口方式
+            {
+                ui->pushButton->setEnabled(false);
+                ui->pushButton_8->setEnabled(false);
+                ui->pushButton_searchuart->setEnabled(true);
+            }
+        break;
+    default:
+        break;
+    }
 }
 
 //WIFI页面
@@ -142,6 +222,8 @@ void Monitor::TCPServe_init()
 
     tcpSever = new QTcpServer(this);
     connect(tcpSever,SIGNAL(newConnection()),this,SLOT(onNewConnection()));
+
+    ui->pushButton_stop->setEnabled(false); //SOCKET未打开前点击该按钮会出现软件崩溃
 }
 
 QString Monitor::GetLocalIP()//获取本机IP
@@ -198,7 +280,6 @@ void Monitor::on_pushButton_tcpcle_clicked()
 {
     ui->textBro_tcpreceive->clear();
 }
-
 
 
 //UART部分
@@ -285,6 +366,9 @@ void Monitor::serialPort_readyRead()
     //从界面中读取以前收到的数据
     ui->textBro_uartreceive->append(QString(buffer).toUtf8());
 
+    Str_Rec = QString(buffer);
+    emit Data_Rec_Over();
+
 }
 
 void Monitor::on_pushButton_uartsend_clicked()
@@ -367,12 +451,15 @@ void Monitor::creatChart()  //创建波形图
 
 void Monitor::on_pushButton_drawing_clicked()
 {
-
     emit Start_Drawing();
-    ui->textBrowser_wave->append(QString::number(Data_Rec[2]));
+ //   ui->textBrowser_wave->append(Data_Rec_list[2]);
 }
 
 void Monitor::on_pushButton_drawing_stop_clicked()
 {
     emit Stop_Drawing();
 }
+
+
+
+

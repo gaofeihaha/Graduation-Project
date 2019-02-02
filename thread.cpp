@@ -8,14 +8,14 @@ Thread::Thread(QObject *parent) : QThread(parent)
 
 }
 
-
+QStringList Data_Rec_list;
 void Thread::run()
 {
+
     //复杂运算
+    Data_Rec_list=Str_Rec.split("#");
 
- Data_Rec[2]=3;
-
-    emit isDone();
+    emit isDone();  //链接槽函数：deal_isDone（）
 
 }
 

@@ -21,7 +21,8 @@ public slots:
 };
 
 
-extern int Data_Rec[5];
+extern QStringList Data_Rec_list;
+extern QString Str_Rec;
 
 
 #endif // THREAD_H
